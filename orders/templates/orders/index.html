@@ -1,0 +1,323 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
+        <title>menu</title>
+        <style media="screen">
+            .col {
+                padding: 8px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Image and text -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+            <a class="navbar-brand">
+                <img src="{% static 'orders/pin.jpg' %}" width="30" height="30" class="d-inline-block align-top" alt="pinocchio">
+                Pinocchio's Pizza & Subs
+            </a>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">{{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a id="logout" class="nav-link" href="{% url 'users:logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a id="login" class="nav-link" href="{% url 'users:login_view' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        <!-- <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <a class="navbar-brand" href="#">Navbar</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item active">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Features</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Pricing</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+              </li>
+            </ul>
+          </div>
+        </nav> -->
+        <br><br>
+
+        <!-- Regular Pizza -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Regular Pizza</h2>
+                </div>
+                <div class="col">
+                    <h4>small</h4>
+                </div>
+                <div class="col">
+                    <h4>large</h4>
+                </div>
+            </div>
+            {% for pizza in pizzas %}
+                {% if pizza.type == "reg" %}
+                    <div class="row">
+                        {% if pizza.name == "1 Topping" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="1">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% elif pizza.name == "2 Toppings" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="2">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% elif pizza.name == "3 Toppings" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% else %}
+                            <div class="col">
+                                {{ pizza.name }}
+                            </div>
+                        {% endif %}
+                        <div class="col">
+                            <span class="price">{{ pizza.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ pizza.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <br><br>
+
+        <!-- Sicilian Pizza -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Sicilian Pizza</h2>
+                </div>
+                <div class="col">
+                    <h4>small</h4>
+                </div>
+                <div class="col">
+                    <h4>large</h4>
+                </div>
+            </div>
+            {% for pizza in pizzas %}
+                {% if pizza.type == "sic" %}
+                    <div class="row">
+                        {% if pizza.name == "1 Item" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="1">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% elif pizza.name == "2 Items" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="2">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% elif pizza.name == "3 Items" %}
+                            <div class="col">
+                                {{ pizza.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
+                                    {% for topping in toppings %}
+                                        <option>{{ topping }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% else %}
+                            <div class="col">
+                                {{ pizza.name }}
+                            </div>
+                        {% endif %}
+                        <div class="col">
+                            <span class="price">{{ pizza.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ pizza.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <br><br>
+
+        <!-- Subs -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Subs</h2>
+                </div>
+                <div class="col">
+                    <h4>small</h4>
+                </div>
+                <div class="col">
+                    <h4>large</h4>
+                </div>
+            </div>
+            {% for sub in subs %}
+                    <div class="row">
+                        {% if sub.name == "Steak + Cheese" %}
+                            <div class="col">
+                                {{ sub.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
+                                    {% for addition in additions %}
+                                        <option>{{ addition }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% else %}
+                            <div class="col">
+                                {{ sub.name }}
+                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
+
+                                    <option>Extra Cheese</option>
+
+                                </select>
+                            </div>
+                        {% endif %}
+                        <div class="col">
+                            {% if sub.name != "Sausage, Peppers & Onions" %}
+                                <span class="price">{{ sub.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ sub.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+
+        <br><br>
+
+        <!-- pasta -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Pasta</h2>
+                </div>
+                <div class="col">
+                    <h4>price</h4>
+                </div>
+            </div>
+            {% for pasta in pastas %}
+                    <div class="row">
+                        <div class="col">
+                            {{ pasta.name }}
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ pasta.price }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+
+        <br><br>
+
+
+        <!-- salads -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Salads</h2>
+                </div>
+                <div class="col">
+                    <h4>price</h4>
+                </div>
+            </div>
+            {% for salad in salads %}
+                    <div class="row">
+                        <div class="col">
+                            {{ salad.name }}
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ salad.price }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+
+        <br><br>
+
+        <!-- Dinner Platters -->
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Dinner Platter</h2>
+                </div>
+                <div class="col">
+                    <h4>small</h4>
+                </div>
+                <div class="col">
+                    <h4>large</h4>
+                </div>
+            </div>
+            {% for platter in dinner_platters %}
+                    <div class="row">
+                            <div class="col">
+                                {{ platter.name }}
+                            </div>
+                        <div class="col">
+                            <span class="price">{{ platter.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                        <div class="col">
+                            <span class="price">{{ platter.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
+                        </div>
+                    </div>
+            {% endfor %}
+        </div>
+
+        <br><br><br><br>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
+    </body>
+</html>
