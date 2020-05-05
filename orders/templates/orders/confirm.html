@@ -1,0 +1,42 @@
+{% extends 'orders/base.html' %}
+{% block title %}
+Your order
+{% endblock %}
+
+{% block body %}
+<div class="container order">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Price</th>
+                <th></th>
+            </tr>
+        </thead>
+        {% for item in list_items_cart %}
+        <tr>
+            <td>{{ item }}</td>
+            <td>{{ item.price }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="last_line">
+            <td>
+                <b>
+                    Total
+                </b>
+            </td>
+            <td>
+                <b>
+                    {{ total_cost }}
+                </b>
+            </td>
+            <td>
+                <a href="{% url 'orders:confirm_order' %}" class="btn btn-outline-success" role="button" name="button">
+                    confirm
+                </a>
+            </td>
+        </tr>
+    </table>
+</div>
+
+{% endblock %}

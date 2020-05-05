@@ -1,0 +1,125 @@
+{% extends 'orders/base.html' %}
+
+{% block title %}
+Overview Orders
+{% endblock %}
+
+{% block body %}
+<div class="container jumbotron">
+    <div class="row">
+        <div class="col">
+            <h1 class="page_header">Incoming Orders</h1>
+        </div>
+    </div>
+</div>
+
+
+<div class="container jumbotron">
+    <div class="row">
+        {% for order in list_orders %}
+        <div class="col-12 col-xl-3 col-lg-4 col-md-6">
+            <div class="card border-secondary mb-3 shadow-sm">
+                <div class="card-header">
+                    Order ID: {{ order.pk }}
+                </div>
+                <div class="card-body text-secondary">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                Guest
+                            </div>
+                            <div class="col">
+                                {{ order.user }}
+                            </div>
+                        </div>
+                        <br>
+                        <!-- look for every pizza that has the same order_id  -->
+                        {% for item in order.orderpizza_set.all %}
+                        <div class="row">
+                            <!-- look for the specific pizza objects,
+                                it's always just one-->
+                            {% for pizza in item.pizza.all %}
+                                <div class="col">
+                                    {{ pizza.name }}
+                                </div>
+                                <div class="col">
+                                    ${{ item.price }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        {% for item in order.ordersub_set.all %}
+                        <div class="row">
+                            {% for sub in item.sub.all %}
+                            <div class="col">
+                                {{ sub.name }}
+                            </div>
+                            <div class="col">
+                                ${{ item.price }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        {% for item in order.orderpasta_set.all %}
+                        <div class="row">
+                            {% for p in item.pasta.all %}
+                            <div class="col">
+                                {{ p.name }}
+                            </div>
+                            <div class="col">
+                                ${{ item.price }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        {% for item in order.ordersalad_set.all %}
+                        <div class="row">
+                            {% for s in item.salad.all %}
+                            <div class="col">
+                                {{ s.name }}
+                            </div>
+                            <div class="col">
+                                ${{ item.price }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        {% for item in order.orderplatter_set.all %}
+                        <div class="row">
+                            {% for p in item.dinner_platter.all %}
+                            <div class="col">
+                                {{ p.name }}
+                            </div>
+                            <div class="col">
+                                ${{ item.price }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        <div class="row">
+                            <div class="col">
+                                <hr>
+                            </div>
+                        </div>
+                        {% if not order.delivered %}
+                        <div class="row">
+                            <div class="col">
+                                <a href="{% url 'orders:mark_as_delivered' order.id %}"
+                                class="btn btn-outline-success float-right" role="button"
+                                name="button">Delivered</a>
+                            </div>
+                        </div>
+                        {% else %}
+                            <div class="alert alert-success" role="alert">
+                                The Order is delivered!
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

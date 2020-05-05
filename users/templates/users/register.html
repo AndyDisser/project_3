@@ -1,0 +1,28 @@
+{% extends 'orders/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}
+Register
+{% endblock %}
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <h5 class="card-header">Register</h5>
+                <div class="card-body">
+                    {% if message2 %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message2 }}
+                        </div>
+                    {% endif %}
+                    <form id="register_user" action="{% url 'users:register' %}" method="post">
+                        {% csrf_token %}
+                        {{ register_form|crispy }}
+                        <button type="submit" class="btn btn-primary mb-2" name="login">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

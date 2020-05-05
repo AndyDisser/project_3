@@ -1,323 +1,354 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends 'orders/base.html' %}
+{% load crispy_forms_tags %}
 
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/css/bootstrap-select.min.css">
-        <title>menu</title>
-        <style media="screen">
-            .col {
-                padding: 8px;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Image and text -->
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+{% block title %}
+Menu
+{% endblock %}
 
-            <a class="navbar-brand">
-                <img src="{% static 'orders/pin.jpg' %}" width="30" height="30" class="d-inline-block align-top" alt="pinocchio">
-                Pinocchio's Pizza & Subs
-            </a>
+{% block nav %}
+<div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+        {% if user.is_authenticated %}
+            {% if request.user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'orders:view_all_orders' %}">view all orders</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">{{ user.username }}</a>
+                </li>
+                <li class="nav-item">
+                    <a id="logout" class="nav-link" href="{% url 'users:logout' %}">Logout</a>
+                </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link">{{ user.username }}</a>
+            </li>
+            <li class="nav-item">
+                <a id="logout" class="nav-link" href="{% url 'users:logout' %}">Logout</a>
+            </li>
+            <li class="nav-item">
+                <a id="view_orders" class="nav-link" href="{% url 'orders:view_own_orders' %}">Submitted Orders</a>
+            </li>
+            {% if list_items_cart|length == 0 %}
+            <li class="nav-item dropdown ml-sm-3">
+                <a class="nav-link dropdown-toggle disabled" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#"><i class="fa fa-shopping-cart fa-2x" aria-hidden="true"></i><span class="badge badge-pill badge-info">{{ num_cart_items }}</span></a>
+            {% else %}
+            <li class="nav-item dropdown ml-sm-3">
+                <a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#"><i class="fa fa-shopping-cart fa-2x" aria-hidden="true"></i><span class="badge badge-pill badge-info">{{ num_cart_items }}</span></a>
+            {% endif %}
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                    {% for item in list_items_cart %}
+                    <div class="cart_items m-4 p-2">
+                        <a class="">{{ item }}</a>
+                        <a href="{% url 'orders:remove_from_cart' item.category item.pk %}" class="btn btn-outline-danger float-right" role="button" name="remove-item">remove</a>
+                    </div>
+                    {% endfor %}
+                    <div class="dropdown-divider align-baseline"></div>
+                    <div class="checkout-area align-middle m-4">
+                        <a class="align-middle m-3p-4"><b>$ {{ total_cost }}</b></a>
+                        <a href="{% url 'orders:confirm_view' %}"class="btn btn-outline-success float-right" role="button" name="checkout">checkout</a>
+                    </div>
+                </div>
+            </li>
+            {% endif %}
+        {% else %}
+            <li class="nav-item mr-sm-2">
+                <a id="login" class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            <li class="nav-item mr-sm-2">
+                <a id="register" class="nav-link" href="{% url 'users:register' %}">Register</a>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}
+{% block body %}
+<br><br>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
+<!-- Regular Pizza -->
+<div class="container">
+    <div class="row row-cols-4 mb-3">
+        <div class="col-5 mr-3">
+            <h2>Regular Pizza</h2>
+        </div>
+        <div class="col-2">
+            <h4>small</h4>
+        </div>
+        <div class="col-2">
+            <h4>large</h4>
+        </div>
+    </div>
+    {% for pizza in pizzas %}
+        {% if pizza.type == "reg" %}
+        <form id="{{ pizza.pk }}" action="{% url 'orders:add_to_cart' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="reg">
+            <div class="row mb-3">
+                {% if pizza.number_toppings > 0 %}
+                    <div class="col-5 mr-3">
+                        {{ pizza.name }}
+                        <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="{{ pizza.number_toppings }}">
+                            {% for topping in toppings %}
+                                <option value="{{ topping.pk }}">{{ topping }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="col-5 mr-3">
+                        {{ pizza.name }}
+                    </div>
+                {% endif %}
+                <div class="col-2">
+                    <input id="small_{{ pizza.name }}" class="price_small" type="radio" name="options" value="{{ pizza.price_small }}">
+                    <label for="small_{{ pizza.name }}">--{{ pizza.price_small }}$</label>
+                </div>
+                <div class="col-2">
+                    <input id="large{{ pizza.name }}" class="price_large" type="radio" name="options" checked value="{{ pizza.price_large }}">
+                    <label for="large{{ pizza.name }}">--{{ pizza.price_large }}$</label>
+                </div>
+                <div class="col-2">
                     {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">{{ user.username }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a id="logout" class="nav-link" href="{% url 'users:logout' %}">Logout</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a id="login" class="nav-link" href="{% url 'users:login_view' %}">Login</a>
-                        </li>
+                    <button value="{{ pizza.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
                     {% endif %}
-                </ul>
+                </div>
             </div>
-        </nav>
-        <!-- <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="#">Navbar</a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-              <li class="nav-item active">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Features</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Pricing</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-              </li>
-            </ul>
-          </div>
-        </nav> -->
-        <br><br>
+        </form>
+        {% endif %}
+    {% endfor %}
+</div>
 
-        <!-- Regular Pizza -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Regular Pizza</h2>
-                </div>
-                <div class="col">
-                    <h4>small</h4>
-                </div>
-                <div class="col">
-                    <h4>large</h4>
-                </div>
-            </div>
-            {% for pizza in pizzas %}
-                {% if pizza.type == "reg" %}
-                    <div class="row">
-                        {% if pizza.name == "1 Topping" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="1">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% elif pizza.name == "2 Toppings" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="2">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% elif pizza.name == "3 Toppings" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% else %}
-                            <div class="col">
-                                {{ pizza.name }}
-                            </div>
-                        {% endif %}
-                        <div class="col">
-                            <span class="price">{{ pizza.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ pizza.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
+<br><br>
+
+<!-- Sicilian Pizza -->
+<div class="container">
+    <div class="row row-cols-4 mb-3">
+        <div class="col-5 mr-3">
+            <h2>Sicilian Pizza</h2>
+        </div>
+        <div class="col-2">
+            <h4>small</h4>
+        </div>
+        <div class="col-2">
+            <h4>large</h4>
+        </div>
+    </div>
+    {% for pizza in pizzas %}
+        {% if pizza.type == "sic" %}
+        <form id="{{ pizza.pk }}" action="{% url 'orders:add_to_cart' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="sic">
+            <div class="row row-cols-4 mb-3">
+                {% if pizza.number_toppings > 0 %}
+                    <div class="col-5 mr-3" id="pizza_{{ pizza.pk }}">
+                        {{ pizza.name }}
+                        <select name="toppings" class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="{{ pizza.number_toppings }}">
+                            {% for topping in toppings %}
+                                <option value="{{ topping.pk }}">{{ topping }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="col-5 mr-3">
+                        {{ pizza.name }}
                     </div>
                 {% endif %}
-            {% endfor %}
-        </div>
-
-        <br><br>
-
-        <!-- Sicilian Pizza -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Sicilian Pizza</h2>
+                <div class="col-2">
+                    <input id="sic_small_{{ pizza.name }}" class="price_small" type="radio" name="options" value="{{ pizza.price_small }}">
+                    <label for="sic_small_{{ pizza.name }}">--{{ pizza.price_small }}$</label>
                 </div>
-                <div class="col">
-                    <h4>small</h4>
+                <div class="col-2">
+                    <input id="sic_large{{ pizza.name }}" class="price_large" type="radio" name="options" checked value="{{ pizza.price_large }}">
+                    <label for="sic_large{{ pizza.name }}">--{{ pizza.price_large }}$</label>
                 </div>
-                <div class="col">
-                    <h4>large</h4>
+                <div class="col-2">
+                    {% if user.is_authenticated %}
+                    <button value="{{ pizza.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
+                    {% endif %}
                 </div>
             </div>
-            {% for pizza in pizzas %}
-                {% if pizza.type == "sic" %}
-                    <div class="row">
-                        {% if pizza.name == "1 Item" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="1">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% elif pizza.name == "2 Items" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="2">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% elif pizza.name == "3 Items" %}
-                            <div class="col">
-                                {{ pizza.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
-                                    {% for topping in toppings %}
-                                        <option>{{ topping }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% else %}
-                            <div class="col">
-                                {{ pizza.name }}
-                            </div>
-                        {% endif %}
-                        <div class="col">
-                            <span class="price">{{ pizza.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ pizza.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
+        </form>
+        {% endif %}
+    {% endfor %}
+</div>
+<br><br>
+
+<!-- Subs -->
+<div class="container">
+    <div class="row row-cols-4 mb-3">
+        <div class="col-5 mr-3">
+            <h2>Subs</h2>
+        </div>
+        <div class="col-2">
+            <h4>small</h4>
+        </div>
+        <div class="col-2">
+            <h4>large</h4>
+        </div>
+    </div>
+    {% for sub in subs %}
+        <form id="{{ sub.name }}" action="{% url 'orders:add_to_cart' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="subs">
+            <div class="row row-cols-4 mb-3" id="{{ sub.name }}">
+                {% if sub.name == "Steak + Cheese" %}
+                    <div class="col-5">
+                        {{ sub.name }}
+                        <select name="addition" class="selectpicker dropdown-menu-right" title="Additons" data-live-search="true" multiple>
+                            {% for addition in additions %}
+                                <option value="{{ addition.pk }}">{{ addition }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="col-5">
+                        {{ sub.name }}
+                        <select name="addition" class="selectpicker dropdown-menu-right" title="Toppings" multiple>
+
+                            <option value=4>Extra Cheese</option>
+
+                        </select>
                     </div>
                 {% endif %}
-            {% endfor %}
-        </div>
-
-        <br><br>
-
-        <!-- Subs -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Subs</h2>
+                <div class="col-2">
+                    {% if sub.name != "Sausage, Peppers & Onions" %}
+                        <input id="small_{{ sub.name }}" class="price_small" type="radio" name="options" value="{{ sub.price_small }}">
+                        <label for="small_{{ sub.name }}">--{{ sub.price_small }}$</label>
+                    {% endif %}
                 </div>
-                <div class="col">
-                    <h4>small</h4>
+                <div class="col-2">
+                    <input id="largel_{{ sub.name }}" class="price_large" type="radio" name="options" checked value="{{ sub.price_small }}">
+                    <label for="large_{{ sub.name }}">--{{ sub.price_large }}$</label>
                 </div>
-                <div class="col">
-                    <h4>large</h4>
+                <div class="col-2">
+                    {% if user.is_authenticated %}
+                    <button value="{{ sub.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
+                    {% endif %}
                 </div>
             </div>
-            {% for sub in subs %}
-                    <div class="row">
-                        {% if sub.name == "Steak + Cheese" %}
-                            <div class="col">
-                                {{ sub.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
-                                    {% for addition in additions %}
-                                        <option>{{ addition }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        {% else %}
-                            <div class="col">
-                                {{ sub.name }}
-                                <select class="selectpicker dropdown-menu-right" title="Toppings" data-live-search="true" multiple data-max-options="3">
+        </form>
 
-                                    <option>Extra Cheese</option>
+    {% endfor %}
+</div>
 
-                                </select>
-                            </div>
+<br><br>
+
+<!-- pasta -->
+<div class="container">
+    <div class="row row-cols-3 mb-3">
+        <div class="col-5">
+            <h2>Pasta</h2>
+        </div>
+        <div class="col-2">
+            <h4>price</h4>
+        </div>
+        <div class="col-2">
+
+        </div>
+        <div class="col-2">
+
+        </div>
+    </div>
+    {% for pasta in pastas %}
+    <form class="{{ pasta.name }}" action="{% url 'orders:add_to_cart' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="category" value="pasta">
+            <div class="row mb-3">
+                <div class="col-5">
+                    {{ pasta.name }}
+                </div>
+                <div class="col-2">
+                    <span class="price">{{ pasta.price }}</span>
+                </div>
+                <div class="col-2">
+                </div>
+                <div class="col-2">
+                    {% if user.is_authenticated %}
+                    <button value="{{ pasta.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
+                    {% endif %}
+                </div>
+            </div>
+    </form>
+    {% endfor %}
+</div>
+
+<br><br>
+
+
+<!-- salads -->
+<div class="container">
+    <div class="row row-cols-3 mb-3">
+        <div class="col-5">
+            <h2>Salads</h2>
+        </div>
+        <div class="col-2">
+            <h4>price</h4>
+        </div>
+    </div>
+    {% for salad in salads %}
+    <form id="{{ salad.name }}" action="{% url 'orders:add_to_cart' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="category" value="salad">
+            <div class="row mb-3">
+                <div class="col-5">
+                    {{ salad.name }}
+                </div>
+                <div class="col-2">
+                    <span class="price">{{ salad.price }}</span>
+                </div>
+                <div class="col-2">
+                </div>
+                <div class="col-2">
+                    {% if user.is_authenticated %}
+                    <button value="{{ salad.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    {% endfor %}
+</div>
+
+<br><br>
+
+<!-- Dinner Platters -->
+<div class="container">
+    <div class="row row-cols-4 mb-3">
+        <div class="col-5 mr-3">
+            <h2>Dinner Platter</h2>
+        </div>
+        <div class="col-2">
+            <h4>small</h4>
+        </div>
+        <div class="col-2">
+            <h4>large</h4>
+        </div>
+    </div>
+    {% for platter in dinner_platters %}
+        <form class="{{ platter.pk }}" action="{% url 'orders:add_to_cart' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="platter">
+            <div class="row row-cols-4 mb-3">
+                    <div class="col-5 mr-3">
+                        {{ platter.name }}
+                    </div>
+                    <div class="col-2">
+                        <input id="small_{{ platter.name }}" class="price_small" type="radio" name="options" value="{{ platter.price_small }}">
+                        <label for="small_{{ platter.name }}">--{{ platter.price_small }}$</label>
+                    </div>
+                    <div class="col-2">
+                        <input id="large{{ platter.name }}" class="price_large" type="radio" name="options" checked value="{{ platter.price_large }}">
+                        <label for="large{{ platter.name }}">--{{ platter.price_large }}$</label>
+                    </div>
+                    <div class="col-2">
+                        {% if user.is_authenticated %}
+                        <button value="{{ platter.pk }}" class="btn btn-outline-danger" type="submit" name="submit-button">add to cart</button>
                         {% endif %}
-                        <div class="col">
-                            {% if sub.name != "Sausage, Peppers & Onions" %}
-                                <span class="price">{{ sub.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                            {% endif %}
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ sub.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
                     </div>
-            {% endfor %}
-        </div>
-
-        <br><br>
-
-        <!-- pasta -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Pasta</h2>
-                </div>
-                <div class="col">
-                    <h4>price</h4>
-                </div>
             </div>
-            {% for pasta in pastas %}
-                    <div class="row">
-                        <div class="col">
-                            {{ pasta.name }}
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ pasta.price }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                    </div>
-            {% endfor %}
-        </div>
+        </form>
+    {% endfor %}
+</div>
 
-        <br><br>
+<br><br><br><br>
 
-
-        <!-- salads -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Salads</h2>
-                </div>
-                <div class="col">
-                    <h4>price</h4>
-                </div>
-            </div>
-            {% for salad in salads %}
-                    <div class="row">
-                        <div class="col">
-                            {{ salad.name }}
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ salad.price }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                    </div>
-            {% endfor %}
-        </div>
-
-        <br><br>
-
-        <!-- Dinner Platters -->
-        <div class="container">
-            <div class="row">
-                <div class="col">
-                    <h2>Dinner Platter</h2>
-                </div>
-                <div class="col">
-                    <h4>small</h4>
-                </div>
-                <div class="col">
-                    <h4>large</h4>
-                </div>
-            </div>
-            {% for platter in dinner_platters %}
-                    <div class="row">
-                            <div class="col">
-                                {{ platter.name }}
-                            </div>
-                        <div class="col">
-                            <span class="price">{{ platter.price_small }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                        <div class="col">
-                            <span class="price">{{ platter.price_large }}</span> <button class="btn btn-light" type="button">add to cart</button>
-                        </div>
-                    </div>
-            {% endfor %}
-        </div>
-
-        <br><br><br><br>
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.9/dist/js/bootstrap-select.min.js"></script>
-    </body>
-</html>
+{% endblock %}
